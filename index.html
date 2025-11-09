@@ -112,10 +112,19 @@
             height: 100%;
             aspect-ratio: 21 / 9;
             display: block;
-            cursor: pointer;
             margin: 0;
             padding: 0;
             background: #000;
+        }
+
+        .stream-overlay,
+        #stream-overlay {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>') 12 12, pointer !important;
+        }
+
+        .stream-overlay.playing,
+        #stream-overlay.playing {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>') 12 12, pointer !important;
         }
 
         /* 로딩 인디케이터 */
@@ -212,7 +221,7 @@
                     allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                     allowfullscreen="true"
                 ></iframe>
-                <div id="stream-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10;"></div>
+                <div id="stream-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;"></div>
             </div>
         </div><div class="video-container">
             <div style="position: relative; padding-top: 39.375%;">
@@ -398,12 +407,20 @@
                 const stream = Stream(firstIframe);
                 let isPlaying = true;
 
+                // 인라인 스타일의 cursor 제거 (CSS 커서가 적용되도록)
+                firstOverlay.style.cursor = '';
+                
+                // 초기 커서 설정
+                firstOverlay.classList.add('playing');
+
                 stream.addEventListener('play', () => {
                     isPlaying = true;
+                    firstOverlay.classList.add('playing');
                 });
 
                 stream.addEventListener('pause', () => {
                     isPlaying = false;
+                    firstOverlay.classList.remove('playing');
                 });
 
                 firstOverlay.addEventListener('click', (e) => {
@@ -423,17 +440,22 @@
                 const stream = Stream(iframe);
                 let isPlaying = true;
 
-                stream.addEventListener('play', () => {
-                    isPlaying = true;
-                });
-
-                stream.addEventListener('pause', () => {
-                    isPlaying = false;
-                });
-
                 // 해당 iframe의 오버레이 찾기
                 const overlay = iframe.parentElement.querySelector('.stream-overlay');
                 if (overlay) {
+                    // 초기 커서 설정
+                    overlay.classList.add('playing');
+
+                    stream.addEventListener('play', () => {
+                        isPlaying = true;
+                        overlay.classList.add('playing');
+                    });
+
+                    stream.addEventListener('pause', () => {
+                        isPlaying = false;
+                        overlay.classList.remove('playing');
+                    });
+
                     overlay.addEventListener('click', (e) => {
                         e.stopPropagation();
                         if (isPlaying) {
