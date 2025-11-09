@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Essay with Bug Animation</title>
+    <title>Video Essay - Loopntale</title>
     <style>
         * {
             margin: 0;
@@ -16,6 +16,35 @@
             background: #000;
             color: #fff;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        .content-wrapper::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            -webkit-backdrop-filter: blur(0px);
+            backdrop-filter: blur(0px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9998;
+            transition: -webkit-backdrop-filter 8s ease, backdrop-filter 8s ease, opacity 8s ease, background 8s ease;
+        }
+
+        .content-wrapper.scrolling::before {
+            -webkit-backdrop-filter: blur(85px);
+            backdrop-filter: blur(85px);
+            opacity: 0.96;
+            background: rgba(0, 0, 0, 0.96);
+            transition: -webkit-backdrop-filter 0.5s ease, backdrop-filter 0.5s ease, opacity 0.5s ease, background 0.5s ease;
+        }
+
+        .content-wrapper.scrolling-removing::before {
+            transition: -webkit-backdrop-filter 8s ease, backdrop-filter 8s ease, opacity 8s ease, background 8s ease;
         }
 
         /* Bug Animation Styles */
@@ -42,6 +71,15 @@
             }
         }
 
+        @keyframes rotate360Reverse {
+            0% {
+                transform: rotate(360deg);
+            }
+            100% {
+                transform: rotate(0deg);
+            }
+        }
+
         /* Page Content Styles */
         .content-wrapper {
             position: relative;
@@ -49,6 +87,7 @@
             max-width: 100vw;
             margin: 0;
             padding: 0;
+            line-height: 0;
         }
 
         .video-container {
@@ -57,17 +96,25 @@
             background: #000;
             position: relative;
             padding: 0;
+            overflow: hidden;
+            display: block;
+        }
+
+        .video-container > div {
+            width: 100% !important;
+            padding-top: 39.375% !important; /* 21:9 비율 (9/21 = 0.42857) */
+            position: relative !important;
         }
 
         .video-container iframe,
         .video-container video {
             width: 100%;
+            height: 100%;
             aspect-ratio: 21 / 9;
             display: block;
             cursor: pointer;
             margin: 0;
             padding: 0;
-            vertical-align: bottom;
             background: #000;
         }
 
@@ -130,7 +177,7 @@
 
         @media (max-width: 768px) {
             .video-container {
-                width: 90vw;
+                width: 100vw;
             }
 
             header h1 {
@@ -279,6 +326,65 @@
     <script>
         // Video Management System
         document.addEventListener('DOMContentLoaded', () => {
+            // Scroll Blur Effect
+            let scrollTimer;
+            let bugCreationTimer; // 버그 생성 타이머
+            const contentWrapper = document.querySelector('.content-wrapper');
+            let isScrolling = false;
+
+            window.addEventListener('scroll', () => {
+                if (!isScrolling) {
+                    // 스크롤 시작: 0.5초 transition으로 블러 적용
+                    isScrolling = true;
+                    contentWrapper.classList.remove('scrolling-removing');
+                    contentWrapper.classList.add('scrolling');
+                }
+
+                // 이전 타이머 제거
+                clearTimeout(scrollTimer);
+
+                // 스크롤 멈춘 후 8초 transition으로 블러 제거
+                scrollTimer = setTimeout(() => {
+                    isScrolling = false;
+                    // 8초 transition을 위해 클래스 변경
+                    contentWrapper.classList.remove('scrolling');
+                    contentWrapper.classList.add('scrolling-removing');
+                    // transition 후 클래스 완전 제거
+                    setTimeout(() => {
+                        contentWrapper.classList.remove('scrolling-removing');
+                    }, 8000);
+                }, 100);
+
+                // 스크롤 움직임이 있으면 2~4초 사이에 랜덤하게 새 버그 생성
+                if (bugCreationTimer) {
+                    clearTimeout(bugCreationTimer);
+                }
+                
+                // 2~4초 사이 랜덤 시간 후 버그 생성
+                const randomDelay = 2000 + Math.random() * 2000; // 2000~4000ms
+                bugCreationTimer = setTimeout(() => {
+                    const currentCount = activeBugs.length;
+                    // 최소 2개, 최대 4개 유지
+                    if (currentCount < 2) {
+                        // 2개 미만이면 2~4개 범위로 생성
+                        const needed = Math.min(
+                            Math.floor(Math.random() * 3) + 2, // 2~4개
+                            MAX_BUGS - currentCount
+                        );
+                        for (let i = 0; i < needed; i++) {
+                            setTimeout(() => {
+                                if (activeBugs.length < MAX_BUGS) {
+                                    createBug();
+                                }
+                            }, i * (Math.random() * 300 + 200)); // 200~500ms 간격
+                        }
+                    } else if (currentCount < MAX_BUGS) {
+                        // 2개 이상이면 1개만 생성 (최대 4개 유지)
+                        createBug();
+                    }
+                }, randomDelay);
+            });
+
             // 모든 Cloudflare Stream iframe 제어
             const allIframes = document.querySelectorAll('.stream-iframe');
             const allOverlays = document.querySelectorAll('.stream-overlay');
@@ -342,23 +448,27 @@
 
         // Bug Animation System
         let activeBugs = [];
-        const MAX_BUGS = 4;
+        const MAX_BUGS = 4; // 최대 버그 수
         const BUG_SIZE = 1500;
 
-        // 4개의 이미지 URL
+        // 8개의 이미지 URL
         const bugImages = [
             'https://res.cloudinary.com/dr3aiznca/image/upload/v1762499047/04_tyoytr.png',
             'https://res.cloudinary.com/dr3aiznca/image/upload/v1762499047/03_ng1apb.png',
             'https://res.cloudinary.com/dr3aiznca/image/upload/v1762499047/01_m2xd17.png',
-            'https://res.cloudinary.com/dr3aiznca/image/upload/v1762499047/02_ptdm3f.png'
+            'https://res.cloudinary.com/dr3aiznca/image/upload/v1762499047/02_ptdm3f.png',
+            'https://res.cloudinary.com/dr3aiznca/image/upload/v1762692555/05_hlssum.png',
+            'https://res.cloudinary.com/dr3aiznca/image/upload/v1762692555/06_ksollv.png',
+            'https://res.cloudinary.com/dr3aiznca/image/upload/v1762692555/07_mqeab9.png',
+            'https://res.cloudinary.com/dr3aiznca/image/upload/v1762692555/08_b6n80z.png'
         ];
 
         function getRandomDuration() {
-            return (4.5 + Math.random() * 4.5) * 2; // 9~18초
+            return (3 + Math.random() * 4) * 2 * 1.95 * 1.5; // 17.55~40.95초 (1.5배 더 느리게)
         }
 
         function getRandomRotationDuration() {
-            return 8 + Math.random() * 8; // 8~16초
+            return 14 + Math.random() * 6; // 14~20초
         }
 
         function getRandomEdgePosition() {
@@ -438,16 +548,12 @@
                 return;
             }
 
-            // 스크롤 위치에 따른 크기 계산
-            const scrollPercentage = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
-            // 스크롤 맨 위(0) = 1500px (10배), 스크롤 맨 아래(1) = 150px (1배)
-            const bugSize = 1500 - (scrollPercentage * 1350);
-
             const bug = document.createElement('div');
             bug.className = 'bug';
-            bug.style.width = bugSize + 'px';
-            bug.style.height = bugSize + 'px';
+            bug.style.width = BUG_SIZE + 'px';
+            bug.style.height = BUG_SIZE + 'px';
 
+            // 랜덤 이미지 선택
             const randomImage = bugImages[Math.floor(Math.random() * bugImages.length)];
 
             const img = document.createElement('img');
@@ -455,12 +561,15 @@
             img.alt = 'Bug Character';
 
             const rotationDuration = getRandomRotationDuration();
-            img.style.animation = `rotate360 ${rotationDuration}s linear infinite`;
+            // 양방향 랜덤 회전 (50% 확률로 정방향 또는 역방향)
+            const rotationDirection = Math.random() > 0.5 ? 'rotate360' : 'rotate360Reverse';
+            img.style.animation = `${rotationDirection} ${rotationDuration}s linear infinite`;
 
             bug.appendChild(img);
 
             const duration = getRandomDuration();
 
+            // 랜덤 시작 위치 (4방향 중 하나)
             const startSide = Math.floor(Math.random() * 4);
             const startPos = (() => {
                 switch(startSide) {
@@ -470,20 +579,36 @@
                     case 3: return { x: -2000, y: Math.random() * window.innerHeight };
                 }
             })();
+            
+            // 자연스러운 움직임을 위한 중간 경로점 추가 (베지어 곡선 효과)
             const endPos = getOppositeEdgePosition(startSide);
+            const midPoint = {
+                x: (startPos.x + endPos.x) / 2 + (Math.random() - 0.5) * window.innerWidth * 0.5,
+                y: (startPos.y + endPos.y) / 2 + (Math.random() - 0.5) * window.innerHeight * 0.5
+            };
+
+            // 속도에 약간의 랜덤 변화 추가 (자연스러운 움직임)
+            const baseVx = (endPos.x - startPos.x) / (duration * 60);
+            const baseVy = (endPos.y - startPos.y) / (duration * 60);
+            const speedVariation = 0.8 + Math.random() * 0.4; // 80%~120% 속도 변화
 
             const bugData = {
                 element: bug,
                 x: startPos.x,
                 y: startPos.y,
+                startX: startPos.x, // 시작점 저장
+                startY: startPos.y,
                 targetX: endPos.x,
                 targetY: endPos.y,
-                vx: (endPos.x - startPos.x) / (duration * 60),
-                vy: (endPos.y - startPos.y) / (duration * 60),
+                midX: midPoint.x,
+                midY: midPoint.y,
+                vx: baseVx * speedVariation,
+                vy: baseVy * speedVariation,
                 duration: duration,
                 startTime: Date.now(),
                 removed: false,
-                size: bugSize
+                size: BUG_SIZE,
+                progress: 0 // 경로 진행도 (0~1)
             };
 
             bug.style.left = `${startPos.x}px`;
@@ -495,13 +620,30 @@
 
         function updatePhysics() {
             activeBugs.forEach(bug => {
-                bug.x += bug.vx;
-                bug.y += bug.vy;
+                // 경로 진행도 계산
+                const elapsed = (Date.now() - bug.startTime) / 1000; // 초 단위
+                bug.progress = Math.min(elapsed / bug.duration, 1);
+                
+                // 자연스러운 곡선 경로를 위한 2차 베지어 곡선 계산
+                // 시작점, 중간점, 끝점을 사용한 부드러운 경로
+                const t = bug.progress;
+                
+                // 2차 베지어 곡선: (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
+                const oneMinusT = 1 - t;
+                const bezierX = oneMinusT * oneMinusT * bug.startX + 
+                                2 * oneMinusT * t * bug.midX + 
+                                t * t * bug.targetX;
+                const bezierY = oneMinusT * oneMinusT * bug.startY + 
+                                2 * oneMinusT * t * bug.midY + 
+                                t * t * bug.targetY;
+                
+                // 베지어 경로와 속도 기반 이동을 혼합 (자연스러운 움직임)
+                bug.x = bezierX * 0.4 + (bug.x + bug.vx) * 0.6;
+                bug.y = bezierY * 0.4 + (bug.y + bug.vy) * 0.6;
             });
 
-            // 충돌 처리 제거됨
-
-            // 화면 밖으로 완전히 나간 버그 제거
+            // 화면 밖으로 완전히 나간 버그 제거 및 새 버그 생성
+            const beforeCount = activeBugs.length;
             activeBugs = activeBugs.filter(bug => {
                 const margin = bug.size + 500;
                 const isOffScreen =
@@ -517,6 +659,8 @@
                 }
                 return true;
             });
+
+            // 버그 제거만 수행 (스크롤 기반 생성만 사용)
 
             activeBugs.forEach(bug => {
                 bug.element.style.left = `${bug.x}px`;
@@ -536,40 +680,51 @@
 
         function startBugAnimation() {
             const availableSlots = MAX_BUGS - activeBugs.length;
+            if (availableSlots <= 0) return;
+            
+            // 더 빈번하게 생성: 1~2개씩 랜덤 생성
             const bugCount = Math.min(
-                Math.floor(Math.random() * 3) + 1, // 1~3개 생성
+                Math.floor(Math.random() * 2) + 1, // 1~2개 생성
                 availableSlots
             );
 
             for (let i = 0; i < bugCount; i++) {
                 setTimeout(() => {
                     createBug();
-                }, i * (Math.random() * 500));
+                }, i * (Math.random() * 300 + 100)); // 100~400ms 간격
             }
         }
 
-        // Start animation immediately
-        // 페이지 로드 즉시 버그 2개 생성 (확실하게)
-        createBug();
-        setTimeout(() => createBug(), 100);
-
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                startBugAnimation();
-            }, 100);
-
-            // 더 자주 체크하여 최소 1개 보장
-            setInterval(() => {
-                ensureMinimumBug();
-            }, 100);
-
-            // 2배 더 빈번하게 생성 (300ms → 150ms)
-            setInterval(() => {
-                if (activeBugs.length < MAX_BUGS && Math.random() > 0.02) {
-                    startBugAnimation();
+        // 처음 접속 후 1.5초 후에만 자동으로 버그 이미지 생성 (한 번만)
+        let initialBugCreated = false;
+        
+        function createInitialBugs() {
+            if (!initialBugCreated) {
+                initialBugCreated = true;
+                // 최소 2개, 최대 4개 랜덤 생성
+                const bugCount = Math.floor(Math.random() * 3) + 2; // 2~4개
+                for (let i = 0; i < bugCount; i++) {
+                    setTimeout(() => {
+                        if (activeBugs.length < MAX_BUGS) {
+                            createBug();
+                        }
+                    }, i * (Math.random() * 400 + 300)); // 300~700ms 간격
                 }
-            }, 150);
-       });
+            }
+        }
+
+        // 페이지 로드 후 1.5초 후 한 번만 실행
+        if (document.readyState === 'loading') {
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    createInitialBugs();
+                }, 1500);
+            });
+        } else {
+            setTimeout(() => {
+                createInitialBugs();
+            }, 1500);
+        }
 
         // Background color fixed to black
         document.body.style.backgroundColor = '#000';
