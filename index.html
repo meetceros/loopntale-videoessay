@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-0L0500B9BQ"></script>
     <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-    gtag('config', 'G-0L0500B9BQ');
+        gtag('config', 'G-0L0500B9BQ');
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,10 +45,10 @@
         }
 
         .content-wrapper.scrolling::before {
-            -webkit-backdrop-filter: blur(85px);
-            backdrop-filter: blur(85px);
-            opacity: 0.96;
-            background: rgba(0, 0, 0, 0.96);
+            -webkit-backdrop-filter: blur(60px) brightness(1.1) contrast(1.1) saturate(1.1);
+            backdrop-filter: blur(60px) brightness(1.1) contrast(1.1) saturate(1.1);
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.2);
             transition: -webkit-backdrop-filter 0.5s ease, backdrop-filter 0.5s ease, opacity 0.5s ease, background 0.5s ease;
         }
 
@@ -74,6 +75,7 @@
             0% {
                 transform: rotate(0deg);
             }
+
             100% {
                 transform: rotate(360deg);
             }
@@ -83,6 +85,7 @@
             0% {
                 transform: rotate(360deg);
             }
+
             100% {
                 transform: rotate(0deg);
             }
@@ -108,9 +111,10 @@
             display: block;
         }
 
-        .video-container > div {
+        .video-container>div {
             width: 100% !important;
-            padding-top: 39.375% !important; /* 21:9 비율 (9/21 = 0.42857) */
+            padding-top: 39.375% !important;
+            /* 21:9 비율 (9/21 = 0.42857) */
             position: relative !important;
         }
 
@@ -216,12 +220,35 @@
                 margin: 0.5rem 0;
             }
         }
+
+        /* Lenis Recommended CSS */
+        html.lenis,
+        html.lenis body {
+            height: auto;
+        }
+
+        .lenis.lenis-smooth {
+            scroll-behavior: auto !important;
+        }
+
+        .lenis.lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+
+        .lenis.lenis-stopped {
+            overflow: hidden;
+        }
+
+        .lenis.lenis-scrolling iframe {
+            pointer-events: none;
+        }
     </style>
 </head>
+
 <body>
     <!-- <header> -->
-        <!-- <h1>LOOPNTALE</h1> -->
-        <!-- <nav>
+    <!-- <h1>LOOPNTALE</h1> -->
+    <!-- <nav>
             <a href="#">HOME</a>
             <a href="#">VIDEO ESSAY</a>
             <a href="#">WORK</a>
@@ -232,124 +259,206 @@
     <div class="content-wrapper">
         <div class="video-container" id="cloudflare-container">
             <div>
-                <iframe
-                    id="cloudflare-stream"
+                <iframe id="cloudflare-stream"
                     src="https://customer-vippiceawjzmumxa.cloudflarestream.com/d709c950a9b58f6b0a065a1995662577/iframe?muted=true&preload=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fd709c950a9b58f6b0a065a1995662577%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
                     allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
-                    allowfullscreen="true"
-                    title="Video player"
-                ></iframe>
+                    allowfullscreen="true" title="Video player"></iframe>
                 <div id="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/60291ca35b322f66a625180eaf11b1e6/iframe?muted=true&preload=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F60291ca35b322f66a625180eaf11b1e6%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/60291ca35b322f66a625180eaf11b1e6/iframe?muted=true&preload=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F60291ca35b322f66a625180eaf11b1e6%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/e5f265a28eb15678ccec7967923c1623/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fe5f265a28eb15678ccec7967923c1623%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/e5f265a28eb15678ccec7967923c1623/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fe5f265a28eb15678ccec7967923c1623%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/96639d279d98222dcebd4e832d414a4e/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F96639d279d98222dcebd4e832d414a4e%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/96639d279d98222dcebd4e832d414a4e/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F96639d279d98222dcebd4e832d414a4e%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/70472c95606b10a34839295eaafe2683/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F70472c95606b10a34839295eaafe2683%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/70472c95606b10a34839295eaafe2683/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F70472c95606b10a34839295eaafe2683%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ee8595d135aa3db769d049eafc72f742/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fee8595d135aa3db769d049eafc72f742%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ee8595d135aa3db769d049eafc72f742/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fee8595d135aa3db769d049eafc72f742%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/03c5bd626f71c9bd97257147ca53e088/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F03c5bd626f71c9bd97257147ca53e088%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/03c5bd626f71c9bd97257147ca53e088/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F03c5bd626f71c9bd97257147ca53e088%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/603ed6d137eaabcf3185d3c7fa99e3ad/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F603ed6d137eaabcf3185d3c7fa99e3ad%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/603ed6d137eaabcf3185d3c7fa99e3ad/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F603ed6d137eaabcf3185d3c7fa99e3ad%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/6a13917804524ed0c0cd7f77f0f5ea59/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F6a13917804524ed0c0cd7f77f0f5ea59%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/6a13917804524ed0c0cd7f77f0f5ea59/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F6a13917804524ed0c0cd7f77f0f5ea59%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/e9f058581b4b02fb50d279d63afed7ed/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fe9f058581b4b02fb50d279d63afed7ed%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/e9f058581b4b02fb50d279d63afed7ed/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fe9f058581b4b02fb50d279d63afed7ed%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/3c9d9b9b7e2e57074be03ff11383a33f/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F3c9d9b9b7e2e57074be03ff11383a33f%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/3c9d9b9b7e2e57074be03ff11383a33f/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F3c9d9b9b7e2e57074be03ff11383a33f%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/307feb8db095799a226746d520cb7f21/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F307feb8db095799a226746d520cb7f21%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/307feb8db095799a226746d520cb7f21/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F307feb8db095799a226746d520cb7f21%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/40ec2ec820ade0b52de17004f7f73223/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F40ec2ec820ade0b52de17004f7f73223%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/40ec2ec820ade0b52de17004f7f73223/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F40ec2ec820ade0b52de17004f7f73223%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ad9e96ebf13b7b35535281769a808b4a/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fad9e96ebf13b7b35535281769a808b4a%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ad9e96ebf13b7b35535281769a808b4a/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fad9e96ebf13b7b35535281769a808b4a%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/7c99b09f27643d4a2da42a08927c112a/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F7c99b09f27643d4a2da42a08927c112a%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/7c99b09f27643d4a2da42a08927c112a/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F7c99b09f27643d4a2da42a08927c112a%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/d379acc5a3596b0fef3a23e46f70c06b/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fd379acc5a3596b0fef3a23e46f70c06b%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/d379acc5a3596b0fef3a23e46f70c06b/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fd379acc5a3596b0fef3a23e46f70c06b%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ad61193f23fe9552a2514aceb539228d/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fad61193f23fe9552a2514aceb539228d%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ad61193f23fe9552a2514aceb539228d/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fad61193f23fe9552a2514aceb539228d%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ddf167129caae45541768e3d37c46dba/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fddf167129caae45541768e3d37c46dba%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/ddf167129caae45541768e3d37c46dba/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fddf167129caae45541768e3d37c46dba%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/181779150be66261e9d49dda2b6433a0/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F181779150be66261e9d49dda2b6433a0%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/181779150be66261e9d49dda2b6433a0/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F181779150be66261e9d49dda2b6433a0%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/1eb57a1e91195f6447f0b7266700eff9/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F1eb57a1e91195f6447f0b7266700eff9%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/1eb57a1e91195f6447f0b7266700eff9/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2F1eb57a1e91195f6447f0b7266700eff9%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/a35659988391572534ebbe698df620f5/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fa35659988391572534ebbe698df620f5%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/a35659988391572534ebbe698df620f5/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fa35659988391572534ebbe698df620f5%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
-        </div><div class="video-container">
+        </div>
+        <div class="video-container">
             <div>
-                <iframe class="stream-iframe" title="Video player" src="https://customer-vippiceawjzmumxa.cloudflarestream.com/dbf6d80905ba51173b2d4b8f1a7d1526/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fdbf6d80905ba51173b2d4b8f1a7d1526%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen="true"></iframe>
+                <iframe class="stream-iframe" title="Video player"
+                    src="https://customer-vippiceawjzmumxa.cloudflarestream.com/dbf6d80905ba51173b2d4b8f1a7d1526/iframe?muted=true&loop=true&autoplay=true&poster=https%3A%2F%2Fcustomer-vippiceawjzmumxa.cloudflarestream.com%2Fdbf6d80905ba51173b2d4b8f1a7d1526%2Fthumbnails%2Fthumbnail.jpg%3Ftime%3D%26height%3D600&controls=false"
+                    loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+                    allowfullscreen="true"></iframe>
                 <div class="stream-overlay"></div>
             </div>
         </div>
     </div>
 
     <script src="https://embed.cloudflarestream.com/embed/sdk.latest.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
     <script>
         // Video Management System
         document.addEventListener('DOMContentLoaded', () => {
@@ -386,7 +495,7 @@
                 if (bugCreationTimer) {
                     clearTimeout(bugCreationTimer);
                 }
-                
+
                 // 2~4초 사이 랜덤 시간 후 버그 생성
                 const randomDelay = 2000 + Math.random() * 2000; // 2000~4000ms
                 bugCreationTimer = setTimeout(() => {
@@ -427,7 +536,7 @@
 
                 // 인라인 스타일의 cursor 제거 (CSS 커서가 적용되도록)
                 firstOverlay.style.cursor = '';
-                
+
                 // 초기 커서 설정
                 firstOverlay.classList.add('playing');
 
@@ -504,17 +613,17 @@
         ];
 
         function getRandomDuration() {
-            return (3 + Math.random() * 4) * 2 * 1.95 * 1.5; // 17.55~40.95초 (1.5배 더 느리게)
+            return (3 + Math.random() * 4) * 2 * 1.95 * 3.0; // 35.1~81.9 (2x slower compared to 1.5 multiplier)
         }
 
         function getRandomRotationDuration() {
-            return 14 + Math.random() * 6; // 14~20초
+            return (14 + Math.random() * 6) * 3; // 42~60s (Slower: 1.5x of previous 2x)
         }
 
         function getRandomEdgePosition() {
             const side = Math.floor(Math.random() * 4); // 0: 상, 1: 우, 2: 하, 3: 좌
 
-            switch(side) {
+            switch (side) {
                 case 0: // 상단
                     return { x: Math.random() * window.innerWidth, y: -2000 };
                 case 1: // 우측
@@ -528,7 +637,7 @@
 
         function getOppositeEdgePosition(startSide) {
             // 시작 방향의 반대편으로 끝점 설정
-            switch(startSide) {
+            switch (startSide) {
                 case 0: // 상단에서 시작 → 하단으로
                     return { x: Math.random() * window.innerWidth, y: window.innerHeight + 2000 };
                 case 1: // 우측에서 시작 → 좌측으로
@@ -612,14 +721,14 @@
             // 랜덤 시작 위치 (4방향 중 하나)
             const startSide = Math.floor(Math.random() * 4);
             const startPos = (() => {
-                switch(startSide) {
+                switch (startSide) {
                     case 0: return { x: Math.random() * window.innerWidth, y: -2000 };
                     case 1: return { x: window.innerWidth + 2000, y: Math.random() * window.innerHeight };
                     case 2: return { x: Math.random() * window.innerWidth, y: window.innerHeight + 2000 };
                     case 3: return { x: -2000, y: Math.random() * window.innerHeight };
                 }
             })();
-            
+
             // 자연스러운 움직임을 위한 중간 경로점 추가 (베지어 곡선 효과)
             const endPos = getOppositeEdgePosition(startSide);
             const midPoint = {
@@ -663,20 +772,20 @@
                 // 경로 진행도 계산
                 const elapsed = (Date.now() - bug.startTime) / 1000; // 초 단위
                 bug.progress = Math.min(elapsed / bug.duration, 1);
-                
+
                 // 자연스러운 곡선 경로를 위한 2차 베지어 곡선 계산
                 // 시작점, 중간점, 끝점을 사용한 부드러운 경로
                 const t = bug.progress;
-                
+
                 // 2차 베지어 곡선: (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
                 const oneMinusT = 1 - t;
-                const bezierX = oneMinusT * oneMinusT * bug.startX + 
-                                2 * oneMinusT * t * bug.midX + 
-                                t * t * bug.targetX;
-                const bezierY = oneMinusT * oneMinusT * bug.startY + 
-                                2 * oneMinusT * t * bug.midY + 
-                                t * t * bug.targetY;
-                
+                const bezierX = oneMinusT * oneMinusT * bug.startX +
+                    2 * oneMinusT * t * bug.midX +
+                    t * t * bug.targetX;
+                const bezierY = oneMinusT * oneMinusT * bug.startY +
+                    2 * oneMinusT * t * bug.midY +
+                    t * t * bug.targetY;
+
                 // 베지어 경로와 속도 기반 이동을 혼합 (자연스러운 움직임)
                 bug.x = bezierX * 0.4 + (bug.x + bug.vx) * 0.6;
                 bug.y = bezierY * 0.4 + (bug.y + bug.vy) * 0.6;
@@ -721,7 +830,7 @@
         function startBugAnimation() {
             const availableSlots = MAX_BUGS - activeBugs.length;
             if (availableSlots <= 0) return;
-            
+
             // 더 빈번하게 생성: 1~2개씩 랜덤 생성
             const bugCount = Math.min(
                 Math.floor(Math.random() * 2) + 1, // 1~2개 생성
@@ -737,7 +846,7 @@
 
         // 처음 접속 후 1.5초 후에만 자동으로 버그 이미지 생성 (한 번만)
         let initialBugCreated = false;
-        
+
         function createInitialBugs() {
             if (!initialBugCreated) {
                 initialBugCreated = true;
@@ -766,8 +875,42 @@
             }, 1500);
         }
 
+        // Automatic bug generation with random interval (10~20 seconds)
+        function scheduleIdleBug() {
+            const delay = 10000 + Math.random() * 10000; // 10000ms ~ 20000ms
+
+            setTimeout(() => {
+                // If less than MAX_BUGS, spawn a new one to keep the system alive
+                if (activeBugs.length < MAX_BUGS) {
+                    createBug();
+                }
+                scheduleIdleBug(); // Schedule next
+            }, delay);
+        }
+
+        // Start the idle loop
+        scheduleIdleBug();
+
         // Background color fixed to black
         document.body.style.backgroundColor = '#000';
+
+        // Initialize Lenis for smooth scrolling
+        const lenis = new Lenis({
+            duration: 2.0, // Reduced duration for less inertia (easier to stop)
+            wheelMultiplier: 0.1, // 0.1x speed (extremely slow, heavy scrolling)
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Exponential easing
+            direction: 'vertical',
+            smooth: true,
+            smoothTouch: false, // Default is false, set true if you want smooth scroll on touch devices too
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+
+        requestAnimationFrame(raf);
     </script>
 </body>
+
 </html>
