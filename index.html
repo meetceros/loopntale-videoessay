@@ -804,56 +804,35 @@
             });
 
             // 4. Initialize Cloudflare Stream Videos
-            // 4. Initialize Cloudflare Stream Videos (Lazy Loading)
+            // 4. Initialize Cloudflare Stream Videos
             const iframes = columnElement.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                const stream = Stream(iframe);
+                const overlay = iframe.parentElement.querySelector('.stream-overlay');
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const iframe = entry.target;
+                if (overlay) {
+                    let isPlaying = true;
+                    overlay.classList.add('playing');
 
-                        // Avoid double init
-                        if (iframe.dataset.loaded) return;
-                        iframe.dataset.loaded = "true";
+                    stream.addEventListener('play', () => {
+                        isPlaying = true;
+                        overlay.classList.add('playing');
+                    });
+                    stream.addEventListener('pause', () => {
+                        isPlaying = false;
+                        overlay.classList.remove('playing');
+                    });
 
-                        // Init Cloudflare Stream
-                        const stream = Stream(iframe);
-                        const overlay = iframe.parentElement.querySelector('.stream-overlay');
-
-                        if (overlay) {
-                            let isPlaying = true;
-                            overlay.classList.add('playing');
-
-                            stream.addEventListener('play', () => {
-                                isPlaying = true;
-                                overlay.classList.add('playing');
-                            });
-                            stream.addEventListener('pause', () => {
-                                isPlaying = false;
-                                overlay.classList.remove('playing');
-                            });
-
-                            overlay.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                if (isPlaying) {
-                                    stream.pause();
-                                } else {
-                                    stream.play();
-                                }
-                            });
+                    overlay.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (isPlaying) {
+                            stream.pause().catch(e => console.error('Pause failed:', e));
+                        } else {
+                            stream.play().catch(e => console.error('Play failed:', e));
                         }
-
-                        // Stop observing this element
-                        observer.unobserve(iframe);
-                    }
-                });
-            }, {
-                root: null, // viewport
-                rootMargin: '200px', // Preload 200px before appearing
-                threshold: 0.1
+                    });
+                }
             });
-
-            iframes.forEach(iframe => observer.observe(iframe));
         }
 
         // Initial Start
