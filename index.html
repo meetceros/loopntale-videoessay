@@ -685,9 +685,9 @@
             const width = window.innerWidth;
             let targetCols = 1;
 
-            if (width > 1600) {
+            if (width >= 1024) {
                 targetCols = 3;
-            } else if (width > 800) {
+            } else if (width >= 768) {
                 targetCols = 2;
             } else {
                 targetCols = 1;
