@@ -295,6 +295,35 @@
         .lenis.lenis-scrolling iframe {
             pointer-events: none;
         }
+
+        /* 
+           Visual Texture Overlay 
+           Combines:
+           1. Fine Dot Matrix (Black dots to simulate screen mask)
+           2. Structural Grid (Light lines)
+        */
+        .texture-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9000;
+            /* Above videos (10), Below Bugs (9999) */
+
+            background-image:
+                /* Dot Matrix: 4px spacing */
+                radial-gradient(circle, rgba(0, 0, 0, 0.5) 1px, transparent 1.5px),
+                /* Grid Lines: 20px spacing */
+                linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+
+            background-size:
+                4px 4px,
+                20px 20px,
+                20px 20px;
+        }
     </style>
 </head>
 
@@ -309,6 +338,9 @@
         </nav> -->
     <!-- </header> -->
 
+    <!-- </header> -->
+
+    <div class="texture-overlay"></div>
     <div id="layout-container"></div>
 
     <template id="content-template">
@@ -539,6 +571,17 @@
             'https://res.cloudinary.com/dr3aiznca/image/upload/v1762692555/08_b6n80z.png'
         ];
 
+        const videoIds = [
+            'd709c950a9b58f6b0a065a1995662577', '60291ca35b322f66a625180eaf11b1e6', 'e5f265a28eb15678ccec7967923c1623',
+            '96639d279d98222dcebd4e832d414a4e', '70472c95606b10a34839295eaafe2683', 'ee8595d135aa3db769d049eafc72f742',
+            '03c5bd626f71c9bd97257147ca53e088', '603ed6d137eaabcf3185d3c7fa99e3ad', '6a13917804524ed0c0cd7f77f0f5ea59',
+            'e9f058581b4b02fb50d279d63afed7ed', '3c9d9b9b7e2e57074be03ff11383a33f', '307feb8db095799a226746d520cb7f21',
+            '40ec2ec820ade0b52de17004f7f73223', 'ad9e96ebf13b7b35535281769a808b4a', '7c99b09f27643d4a2da42a08927c112a',
+            'd379acc5a3596b0fef3a23e46f70c06b', 'ad61193f23fe9552a2514aceb539228d', 'ddf167129caae45541768e3d37c46dba',
+            '181779150be66261e9d49dda2b6433a0', '1eb57a1e91195f6447f0b7266700eff9', 'a35659988391572534ebbe698df620f5',
+            'dbf6d80905ba51173b2d4b8f1a7d1526'
+        ];
+
         // --- Bug System Class (One per column) ---
         class BugSystem {
             constructor(container) {
@@ -725,9 +768,17 @@
                 if (i === 1) {
                     videos.sort(() => Math.random() - 0.5);
                 }
-                // Col 2 (Index 2): "Reverse from previous" -> Normal Order since it was reversed.
-                // Resetting to normal order by removing the reverse() call.
-                // if (i === 2) { videos.reverse(); } -> Removed
+                // Col 2 (Index 2): Random Order (Requested) + Force No Loop for Infinite Logic
+                if (i === 2) {
+                    videos.sort(() => Math.random() - 0.5);
+                    // Force loop=false in the SRC for all videos in this column
+                    videos.forEach(videoDiv => {
+                        const iframe = videoDiv.querySelector('iframe');
+                        if (iframe) {
+                            iframe.src = iframe.src.replace(/loop=true/g, 'loop=false');
+                        }
+                    });
+                }
 
                 // Re-append in new order
                 wrapper.innerHTML = '';
@@ -775,7 +826,9 @@
             if (colIndex === 2) {
                 setTimeout(() => {
                     lenis.resize();
-                    lenis.scrollTo(lenis.limit, { immediate: true });
+                    const maxScroll = lenis.limit;
+                    const target = Math.random() * maxScroll;
+                    lenis.scrollTo(target, { immediate: true });
                 }, 200);
             }
 
@@ -836,34 +889,77 @@
             });
 
             iframes.forEach(iframe => {
-                // Immediate init to ensure SDK is always ready (Fixes "unclickable" bug)
-                const stream = Stream(iframe);
-                iframe.stream = stream; // Save instance for observer
-
                 const overlay = iframe.parentElement.querySelector('.stream-overlay');
+                let isPlaying = true; // Local tracking state
 
+                // One-time Overlay Click Listener (delegated to current iframe.stream)
                 if (overlay) {
-                    let isPlaying = true; // Tracking internal state for toggle
                     overlay.classList.add('playing');
-
-                    stream.addEventListener('play', () => {
-                        isPlaying = true;
-                        overlay.classList.add('playing');
-                    });
-                    stream.addEventListener('pause', () => {
-                        isPlaying = false;
-                        overlay.classList.remove('playing');
-                    });
-
                     overlay.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        if (isPlaying) {
-                            stream.pause().catch(e => console.error('Pause failed:', e));
-                        } else {
-                            stream.play().catch(e => console.error('Play failed:', e));
+                        // Always use the current stream instance
+                        if (iframe.stream) {
+                            if (isPlaying) {
+                                iframe.stream.pause().catch(e => console.error('Pause failed:', e));
+                            } else {
+                                iframe.stream.play().catch(e => console.error('Play failed:', e));
+                            }
                         }
                     });
                 }
+
+                // Function to set up stream and listeners (re-usable for reloads)
+                const setupStream = () => {
+                    // Init Stream
+                    const stream = Stream(iframe);
+                    iframe.stream = stream;
+
+                    // Sync overlay state
+                    stream.addEventListener('play', () => {
+                        isPlaying = true;
+                        if (overlay) overlay.classList.add('playing');
+                    });
+                    stream.addEventListener('pause', () => {
+                        isPlaying = false;
+                        if (overlay) overlay.classList.remove('playing');
+                    });
+
+                    // Col 3 Special Logic: Infinite Random Playback
+                    if (colIndex === 2) {
+                        // Ensure loop is false when metadata loads (Fix for race condition)
+                        stream.addEventListener('loadedmetadata', () => {
+                            stream.loop = false;
+                            console.log('Enforced loop=false for Col 3 video');
+                        });
+
+                        stream.loop = false; // Set immediately as well
+
+                        stream.addEventListener('ended', () => {
+                            // Pick random different video
+                            let newId;
+                            do {
+                                newId = videoIds[Math.floor(Math.random() * videoIds.length)];
+                            } while (iframe.src.includes(newId));
+
+                            console.log('Video ended in Col 3. Switching to:', newId);
+
+                            // Update SRC
+                            iframe.src = `https://customer-vippiceawjzmumxa.cloudflarestream.com/${newId}/iframe?muted=true&preload=true&loop=false&autoplay=true&controls=false`;
+
+                            // When new iframe loads, re-setup stream
+                            iframe.onload = () => {
+                                setupStream(); // Recursive setup for new content
+                                // Force play just in case autoplay is blocked or deferred
+                                setTimeout(() => {
+                                    if (iframe.stream) iframe.stream.play().catch(() => { });
+                                }, 100);
+                            };
+                        });
+                    }
+                };
+
+                // Initial Setup
+                setupStream();
 
                 // Start observing
                 observer.observe(iframe);
