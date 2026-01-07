@@ -1,0 +1,450 @@
+/* Global Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'IBM Plex Mono', monospace;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+    position: relative;
+}
+
+body.intro-cursor-hidden,
+body.intro-cursor-hidden *,
+body.intro-cursor-hidden .stream-overlay,
+body.intro-cursor-hidden #stream-overlay,
+body.intro-cursor-hidden .video-container,
+body.intro-cursor-hidden iframe {
+    cursor: none !important;
+}
+
+.bug-overlay {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    margin-bottom: -100vh;
+
+    /* Blur Effect Base State */
+    background: rgba(0, 0, 0, 0);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    transition: -webkit-backdrop-filter 4s ease, backdrop-filter 4s ease, background 4s ease;
+}
+
+.bug-overlay.scrolling {
+    -webkit-backdrop-filter: blur(12px) brightness(1.1) contrast(1.1) grayscale(100%);
+    backdrop-filter: blur(12px) brightness(1.1) contrast(1.1) grayscale(100%);
+    background: rgba(0, 0, 0, 0.2);
+    transition: -webkit-backdrop-filter 1s ease, backdrop-filter 1s ease, background 1s ease;
+}
+
+.bug-overlay.scrolling-removing {
+    transition: -webkit-backdrop-filter 4s ease, backdrop-filter 4s ease, background 4s ease;
+}
+
+/* Bug Animation Styles */
+.bug {
+    position: absolute;
+    width: 1500px;
+    height: 1500px;
+    z-index: 9999;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.bug img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@keyframes rotate360 {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotate360Reverse {
+    0% {
+        transform: rotate(360deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+/* Page Content Styles */
+.content-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+
+    /* Intro Fade Effect */
+    opacity: 1;
+    /* Exponential Ease-In: Starts very slow, ends fast */
+    transition: opacity 8.0s cubic-bezier(0.95, 0.05, 0.795, 0.035);
+    /* 8.0s fade duration */
+}
+
+.content-wrapper.intro-hidden {
+    opacity: 0 !important;
+}
+
+.video-container {
+    width: 100%;
+    margin: 0;
+    background: #000;
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+    display: block;
+}
+
+.video-container>div {
+    width: 100% !important;
+    padding-top: 39.375% !important;
+    /* 21:9 비율 (9/21 = 0.42857) */
+    position: relative !important;
+}
+
+.video-container iframe,
+.video-container video {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 21 / 9;
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: #000;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.stream-overlay,
+#stream-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>') 12 12, pointer !important;
+}
+
+.stream-overlay.playing,
+#stream-overlay.playing {
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/></svg>') 12 12, pointer !important;
+}
+
+/* 로딩 인디케이터 */
+.video-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #666;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.placeholder-video {
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1.5rem;
+}
+
+header {
+    padding: 2rem;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.9);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+}
+
+nav {
+    margin-top: 1rem;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 1rem;
+    font-size: 0.9rem;
+    transition: opacity 0.3s;
+}
+
+nav a:hover {
+    opacity: 0.6;
+}
+
+.spacer {
+    height: 50vh;
+}
+
+@media (max-width: 768px) {
+    .video-container {
+        width: 100vw;
+    }
+
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    nav a {
+        display: block;
+        margin: 0.5rem 0;
+    }
+}
+
+/* Layout System */
+#layout-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+}
+
+.layout-column {
+    flex: 1;
+    height: 100%;
+    overflow-y: overlay;
+    /* Try overlay, fallback to scroll */
+    position: relative;
+    border-right: none;
+    margin-right: -6px;
+    /* Pull next column to overlap scrollbar space */
+}
+
+.layout-column:last-child {
+    border-right: none;
+    margin-right: 0;
+}
+
+/* Reverse Stacking Order to ensure scrollbar overlays next column */
+.layout-column:nth-child(1) {
+    z-index: 3;
+}
+
+.layout-column:nth-child(2) {
+    z-index: 2;
+}
+
+.layout-column:nth-child(3) {
+    z-index: 1;
+}
+
+/* Force Scrollbar Visibility & Styling */
+.layout-column::-webkit-scrollbar {
+    width: 6px;
+    background: transparent;
+    /* Ensure base is transparent */
+}
+
+.layout-column::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.layout-column::-webkit-scrollbar-corner {
+    background: transparent;
+    /* Corner transparency */
+}
+
+.layout-column::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 3px;
+    border: 1px solid transparent;
+}
+
+/* Show scrollbar when class is added via JS */
+.layout-column.show-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+}
+
+.layout-column.show-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+    /* Semi-transparent hover */
+}
+
+/* Adjust content wrapper for column context */
+.content-wrapper {
+    /* width: 100%;  Already default */
+    /* Remove fixed/absolute positioning contexts if any interfering */
+}
+
+/* Lenis Recommended CSS */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+    pointer-events: none;
+}
+
+/* 
+   Visual Texture Overlay 
+   Combines:
+   1. Fine Dot Matrix (Black dots to simulate screen mask)
+   2. Structural Grid (Light lines)
+*/
+/* --- Per-Column Texture Overlays --- */
+.col-texture {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9000;
+    /* Above videos (10), Below Bugs (9999) */
+    mix-blend-mode: overlay;
+    margin-bottom: -100vh;
+    /* Fix: Prevent taking up layout space */
+
+    /* Texture Intro Fade */
+    opacity: 1;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.col-texture.intro-hidden-texture {
+    opacity: 0 !important;
+}
+
+/* Step 2 Special State: Visible on Black via Background Change */
+.layout-column {
+    /* ... flex/layout properties defined above ... */
+    background-color: #080808;
+    /* Dark Gray start (matches Seq 2 target) */
+    transition: background-color 1.5s ease-in-out;
+}
+
+.layout-column.intro-bg-reveal {
+    background-color: #080808 !important;
+    /* Lift black to Dark Gray to reveal Overlay texture */
+}
+
+.layout-column.final-transparent {
+    background-color: transparent !important;
+}
+
+/* Intro Cursor Spotlight (Inverse Mask) */
+.cursor-spotlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 5;
+
+    /* The Dark Overlay Layer */
+    background-color: rgba(0, 0, 0, 0.85);
+
+    /* The Mask: Holes at Mouse and Trail */
+    /* Gradient: Transparent (Hole) -> Black (Opaque Overlay) */
+    -webkit-mask-image:
+        radial-gradient(circle 300px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, black 80%),
+        radial-gradient(circle 450px at var(--trail-x, 50%) var(--trail-y, 50%), transparent 0%, black 80%);
+    mask-image:
+        radial-gradient(circle 300px at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, black 80%),
+        radial-gradient(circle 450px at var(--trail-x, 50%) var(--trail-y, 50%), transparent 0%, black 80%);
+
+    /* Combine holes (Intersect = Keep opaque where BOTH are opaque. If one is transp, result is transp) */
+    -webkit-mask-composite: destination-in;
+    mask-composite: intersect;
+
+    transition: opacity 3.0s ease-out;
+}
+
+/* Grid Highlight: Adds brightness/color-dodge to the grid lines under the spotlight */
+.grid-highlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 4;
+    /* Below the mask (5), Above content (3/2/1) */
+
+    background: radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255, 255, 255, 0.4) 0%,
+            transparent 70%);
+    mix-blend-mode: color-dodge;
+    /* Makes gray grid lines turn bright white */
+
+    opacity: 1;
+    transition: opacity 3.0s ease-out;
+}
+
+.cursor-spotlight.fade-out,
+.grid-highlight.fade-out {
+    opacity: 0;
+}
+
+/* Col 2: Grid Only */
+.texture-grid {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Col 3: Grid + Dot */
+.texture-all {
+    background-image:
+        /* Dot Matrix: 50% smaller -> +20% larger */
+        radial-gradient(circle, rgba(0, 0, 0, 0.5) 0.6px, transparent 0.9px),
+        /* Grid Lines */
+        linear-gradient(rgba(255, 255, 255, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.4) 1px, transparent 1px);
+    background-size:
+        4px 4px,
+        20px 20px,
+        20px 20px;
+}
