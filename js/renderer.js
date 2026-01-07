@@ -40,8 +40,9 @@ bugImages.forEach(src => {
 
 // --- Bug System Class (One per column) ---
 class BugSystem {
-    constructor(container) {
+    constructor(container, colIndex) {
         this.container = container;
+        this.colIndex = colIndex;
         this.activeBugs = [];
         this.running = true;
         this.timer = null;
@@ -59,11 +60,15 @@ class BugSystem {
 
         // Initial burst - IMMEDIATE (No delay)
         // Pass true for isInitial to spawn closer to edge
-        if (this.activeBugs.length < MAX_BUGS_PER_COLUMN && this.running) this.createBug(true);
+        // [MODIFIED] If Column 1 (Index 0), Force FIRST bug to be heavily visible
+        if (this.activeBugs.length < MAX_BUGS_PER_COLUMN && this.running) {
+            const forceVisible = (this.colIndex === 0 && this.activeBugs.length === 0);
+            this.createBug(true, forceVisible);
+        }
 
-        // Add a second one quickly for density
+        // Add a second one quickly for density (Standard initial)
         setTimeout(() => {
-            if (this.activeBugs.length < MAX_BUGS_PER_COLUMN && this.running) this.createBug(true);
+            if (this.activeBugs.length < MAX_BUGS_PER_COLUMN && this.running) this.createBug(true, false);
         }, 500);
     }
 
@@ -95,7 +100,7 @@ class BugSystem {
         }
     }
 
-    createBug(isInitial = false) {
+    createBug(isInitial = false, forceVisible = false) {
         if (!this.running || this.activeBugs.length >= MAX_BUGS_PER_COLUMN) return;
 
         const width = this.container.clientWidth;
@@ -127,13 +132,16 @@ class BugSystem {
         const duration = moveBase * SLOWDOWN_FACTOR;
 
         // Logic relative to this container
-        const startSide = Math.floor(Math.random() * 4);
+        let startSide = Math.floor(Math.random() * 4);
+        let margin = isInitial ? 1100 : 1600;
 
-        // Initial Load Optimization:
-        // Use smaller margin if initial load so they appear "almost immediately"
-        // Standard: 1600 (Gap of 100px) -> Slow approach
-        // Initial: 1300 (Overlap of 200px) -> Visible immediately
-        const margin = isInitial ? 1300 : 1600;
+        // [MODIFIED] Force Visible Logic for Col 1 Initial
+        if (forceVisible) {
+            // Pick Top or Left (Sides 0 or 3) to ensure visibility with negative values
+            startSide = Math.random() > 0.5 ? 0 : 3;
+            // Use small margin (500) -> -500px -> 1000px overlap (Very visible)
+            margin = 200;
+        }
 
         const startPos = this.getEdgePos(startSide, width, height, margin);
         // End position always uses full margin to clear the screen completely
