@@ -245,64 +245,14 @@ nav a:hover {
     border-right: none;
     margin-right: -6px;
     /* Pull next column to overlap scrollbar space */
+    isolation: isolate;
+    /* Fix: Create stacking context for mix-blend-mode on mobile */
 }
 
-.layout-column:last-child {
-    border-right: none;
-    margin-right: 0;
-}
-
-/* Reverse Stacking Order to ensure scrollbar overlays next column */
-.layout-column:nth-child(1) {
-    z-index: 3;
-}
-
-.layout-column:nth-child(2) {
-    z-index: 2;
-}
-
-.layout-column:nth-child(3) {
-    z-index: 1;
-}
-
-/* Force Scrollbar Visibility & Styling */
-.layout-column::-webkit-scrollbar {
-    width: 6px;
-    background: transparent;
-    /* Ensure base is transparent */
-}
-
-.layout-column::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.layout-column::-webkit-scrollbar-corner {
-    background: transparent;
-    /* Corner transparency */
-}
-
-.layout-column::-webkit-scrollbar-thumb {
-    background: transparent;
-    border-radius: 3px;
-    border: 1px solid transparent;
-}
-
-/* Show scrollbar when class is added via JS */
-.layout-column.show-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-}
-
-.layout-column.show-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-    /* Semi-transparent hover */
-}
+/* ... lines 250-300 ... */
 
 /* Adjust content wrapper for column context */
-.content-wrapper {
-    /* width: 100%;  Already default */
-    /* Remove fixed/absolute positioning contexts if any interfering */
-}
+/* .content-wrapper rule removed (empty) */
 
 /* Lenis Recommended CSS */
 html.lenis,
