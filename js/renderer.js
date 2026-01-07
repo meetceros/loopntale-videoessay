@@ -70,6 +70,11 @@ class BugSystem {
         setTimeout(() => {
             if (this.activeBugs.length < MAX_BUGS_PER_COLUMN && this.running) this.createBug(true, false);
         }, 500);
+
+        // [MOBILE EXCLUSIVE] Force an EXTRA visible bug immediately to succeed "must appear" request
+        if (window.innerWidth <= 768 && this.running && this.activeBugs.length < MAX_BUGS_PER_COLUMN) {
+            this.createBug(true, true);
+        }
     }
 
     destroy() {
