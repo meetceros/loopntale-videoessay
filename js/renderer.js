@@ -513,10 +513,14 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
                 e.stopPropagation();
                 // Always use the current stream instance
                 if (iframe.stream) {
-                    if (isPlaying) {
-                        iframe.stream.pause().catch(e => console.error('Pause failed:', e));
-                    } else {
+                    // Use actual player state if available, otherwise trust local state
+                    // SDK 'paused' property is the most reliable source of truth
+                    const playerPaused = (typeof iframe.stream.paused !== 'undefined') ? iframe.stream.paused : !isPlaying;
+
+                    if (playerPaused) {
                         iframe.stream.play().catch(e => console.error('Play failed:', e));
+                    } else {
+                        iframe.stream.pause().catch(e => console.error('Pause failed:', e));
                     }
                 }
             });
@@ -556,6 +560,10 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
                     } while (iframe.src.includes(newId));
 
                     console.log('Video ended in Col 3. Switching to:', newId);
+
+                    // Reset State for Autoplay transition
+                    isPlaying = true;
+                    if (overlay) overlay.classList.add('playing');
 
                     // Update SRC
                     iframe.src = `https://customer-vippiceawjzmumxa.cloudflarestream.com/${newId}/iframe?muted=true&preload=true&loop=false&autoplay=true&controls=false`;
