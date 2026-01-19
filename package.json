@@ -1,0 +1,24 @@
+{
+  "name": "pgame2",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meetceros/loopntale-videoessay.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/meetceros/loopntale-videoessay/issues"
+  },
+  "homepage": "https://github.com/meetceros/loopntale-videoessay#readme",
+  "description": "",
+  "devDependencies": {
+    "electron": "^39.2.7"
+  }
+}

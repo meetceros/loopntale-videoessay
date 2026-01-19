@@ -238,6 +238,15 @@
 
     <script src="https://embed.cloudflarestream.com/embed/sdk.latest.js"></script>
     <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <!-- SVG Filters -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="noise-dither">
+                <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch" />
+                <feColorMatrix type="saturate" values="0" />
+            </filter>
+        </defs>
+    </svg>
     <script src="js/renderer.js"></script>
 </body>
 

@@ -240,6 +240,7 @@ function updateLayout() {
     layoutContainer.innerHTML = '';
 
     // Build Columns
+    let col1OrderIndices = null;
     for (let i = 0; i < targetCols; i++) {
         const col = document.createElement('div');
         col.className = 'layout-column';
@@ -273,21 +274,23 @@ function updateLayout() {
         }
 
         const videos = Array.from(wrapper.children);
+        const baseVideos = [...videos];
 
         // Col 1 (Index 1): Random Order
         if (i === 1) {
             videos.sort(() => Math.random() - 0.5);
+            // Store the shuffled index order (not the nodes) to avoid moving nodes across columns.
+            col1OrderIndices = videos.map(v => baseVideos.indexOf(v));
         }
-        // Col 2 (Index 2): Random Order (Requested) + Force No Loop for Infinite Logic
+        // Col 3 (Index 2): Reverse order of Col 1
         if (i === 2) {
-            videos.sort(() => Math.random() - 0.5);
-            // Force loop=false in the SRC for all videos in this column
-            videos.forEach(videoDiv => {
-                const iframe = videoDiv.querySelector('iframe');
-                if (iframe) {
-                    iframe.src = iframe.src.replace(/loop=true/g, 'loop=false');
-                }
-            });
+            if (col1OrderIndices && col1OrderIndices.length === videos.length) {
+                const reversed = [...col1OrderIndices].reverse();
+                const reordered = reversed.map(idx => videos[idx]);
+                videos.splice(0, videos.length, ...reordered);
+            } else {
+                videos.reverse();
+            }
         }
 
         // Re-append in new order
@@ -322,6 +325,11 @@ function updateLayout() {
         let mouseY = window.innerHeight / 2;
         let trailX = mouseX;
         let trailY = mouseY;
+
+        // Spotlight Growth: Start at 0, grow to 450
+        let currentSpotRadius = 0;
+        const targetSpotRadius = 450;
+
         const lerpFactor = 0.12;
 
         // Track Mouse
@@ -342,6 +350,11 @@ function updateLayout() {
             trailY += (mouseY - trailY) * lerpFactor;
             document.body.style.setProperty('--trail-x', `${trailX}px`);
             document.body.style.setProperty('--trail-y', `${trailY}px`);
+
+            // Radius Growth (Gradual reveal on load)
+            // Slower lerp for dramatic effect (0.005) - Very slow open
+            currentSpotRadius += (targetSpotRadius - currentSpotRadius) * 0.005;
+            document.body.style.setProperty('--spot-r', `${currentSpotRadius}px`);
 
             rafId = requestAnimationFrame(animateSpotlight);
         }
@@ -372,9 +385,9 @@ function updateLayout() {
                     spotlight.remove();
                     highlight.remove();
 
-                    // Show real cursor (2.5s later, slightly faster reveal)
+                    // Show real cursor (0.5s overlap with fade end)
                     document.body.classList.remove('intro-cursor-hidden');
-                }, 2500);
+                }, 4000);
             }, 5000);
 
             introPlayed = true;
@@ -478,6 +491,235 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     // 4. Initialize Cloudflare Stream Videos
     // 4. Initialize Cloudflare Stream Videos (Smart Lazy Loading)
     const iframes = columnElement.querySelectorAll('iframe');
+    const iframeState = new WeakMap();
+
+    const getOverlayForIframe = (iframe) => iframe?.parentElement?.querySelector?.('.stream-overlay') || null;
+    const setOverlayPlaying = (iframe, playing) => {
+        const overlay = getOverlayForIframe(iframe);
+        if (!overlay) return;
+        if (playing) overlay.classList.add('playing');
+        else overlay.classList.remove('playing');
+    };
+
+    const getState = (iframe) => {
+        let state = iframeState.get(iframe);
+        if (!state) {
+            state = {
+                isPlaying: false,
+                isStreamReady: false,
+                isInitAttempted: false,
+                lastEventTs: 0,
+                desiredPlaying: null,
+                retryTimer: null,
+                retryCount: 0
+            };
+            iframeState.set(iframe, state);
+        }
+        return state;
+    };
+
+    const attachStreamListeners = (iframe, stream) => {
+        const state = getState(iframe);
+
+        stream.addEventListener('play', () => {
+            state.isPlaying = true;
+            state.lastEventTs = Date.now();
+            if (state.retryTimer) {
+                clearTimeout(state.retryTimer);
+                state.retryTimer = null;
+            }
+            setOverlayPlaying(iframe, true);
+        });
+        stream.addEventListener('pause', () => {
+            state.isPlaying = false;
+            state.lastEventTs = Date.now();
+            if (state.retryTimer) {
+                clearTimeout(state.retryTimer);
+                state.retryTimer = null;
+            }
+            setOverlayPlaying(iframe, false);
+        });
+
+        stream.addEventListener('loadedmetadata', () => {
+            state.isStreamReady = true;
+            state.lastEventTs = Date.now();
+        });
+
+        // Useful for diagnosing specific broken embeds
+        stream.addEventListener('error', (err) => {
+            console.warn('Stream error:', iframe?.src, err);
+        });
+
+        // Fallback ready hint (don't block clicks on this, but helps timing stability)
+        // [FIX] Diagnosis 2: Increase fallback timeout to 2s and FORCE isStreamReady=true
+        // This ensures that even if 'loadedmetadata' is missed, clicks will eventually work.
+        setTimeout(() => {
+            state.isStreamReady = true;
+        }, 2000);
+
+        // Col 3 no longer uses random playback; default loop behavior applies.
+    };
+
+    const initStreamIfPossible = (iframe, force = false) => {
+        const state = getState(iframe);
+        if (!force && (iframe.stream || state.isInitAttempted)) return;
+        state.isInitAttempted = true;
+        if (state.retryTimer) {
+            clearTimeout(state.retryTimer);
+            state.retryTimer = null;
+        }
+
+        try {
+            const stream = Stream(iframe);
+            iframe.stream = stream;
+            attachStreamListeners(iframe, stream);
+        } catch (e) {
+            iframe.stream = null;
+            state.isInitAttempted = false;
+            console.warn('Stream init failed (will retry on iframe load):', e);
+        }
+    };
+
+    // Cloudflare Stream SDK methods sometimes return void (not a Promise) depending on timing/state.
+    // Calling `.catch` unconditionally can crash the whole click handler, so normalize to Promise.
+    const safeStreamCall = (stream, methodName, onError) => {
+        if (!stream) return;
+        const fn = stream[methodName];
+        if (typeof fn !== 'function') return;
+        try {
+            const result = fn.call(stream);
+            if (result && typeof result.then === 'function') {
+                result.catch(onError || (() => { }));
+            }
+        } catch (err) {
+            (onError || (() => { }))(err);
+        }
+    };
+
+    const replaceIframePreservingAttrs = (oldIframe, newSrc) => {
+        const parent = oldIframe?.parentElement;
+        if (!parent) return null;
+
+        const newIframe = document.createElement('iframe');
+        Array.from(oldIframe.attributes).forEach(attr => {
+            if (attr.name.toLowerCase() === 'src') return;
+            newIframe.setAttribute(attr.name, attr.value);
+        });
+        newIframe.src = newSrc;
+
+        newIframe.stream = null;
+        newIframe.stream = null;
+        newIframe.isManuallyPaused = false;
+
+        // Reset state for new iframe
+        const state = getState(newIframe);
+        state.isStreamReady = false;
+        state.isInitAttempted = false;
+
+        // Observer swap
+        try { observer.unobserve(oldIframe); } catch (e) { /* ignore */ }
+        oldIframe.replaceWith(newIframe);
+        observer.observe(newIframe);
+
+        setOverlayPlaying(newIframe, false);
+        return newIframe;
+    };
+
+    // Column-level event delegation: works even when Col 3 swaps iframes
+    columnElement.addEventListener('click', (e) => {
+        const target = e.target;
+        const overlay = target && target.closest ? target.closest('.stream-overlay') : null;
+        if (!overlay) return;
+
+        e.stopPropagation();
+
+        const container = overlay.parentElement;
+        const iframe = container ? container.querySelector('iframe') : null;
+        if (!iframe) return;
+
+        // Ensure stream exists (critical for loading="lazy")
+        if (!iframe.stream) initStreamIfPossible(iframe);
+        if (!iframe.stream) return;
+
+        const state = getState(iframe);
+
+        // [FIX] Diagnosis 1: Prevent Race Conditions
+        // Block interaction if metadata hasn't loaded yet.
+        if (!state.isStreamReady) {
+            console.log('Stream not ready yet, ignoring click.');
+            return;
+        }
+
+        const clickTs = Date.now();
+        state.retryCount = 0;
+
+        // Toggle playback (optimistic UI + manual pause tracking)
+        // Some embeds don't reliably emit play/pause events even when playback changes.
+        // Use the overlay UI state as the primary source of truth for "currently playing".
+        const uiIsPlaying = overlay.classList.contains('playing');
+        state.isPlaying = uiIsPlaying;
+        const wantPlay = !uiIsPlaying;
+        state.desiredPlaying = wantPlay;
+
+        if (wantPlay) {
+            safeStreamCall(iframe.stream, 'play', (err) => console.error('Play failed:', err));
+            iframe.isManuallyPaused = false;
+            setOverlayPlaying(iframe, true);
+        } else {
+            safeStreamCall(iframe.stream, 'pause', (err) => console.error('Pause failed:', err));
+            iframe.isManuallyPaused = true;
+            setOverlayPlaying(iframe, false);
+        }
+
+        // Some embeds ignore the first play/pause call (or SDK binding is stale).
+        // Stage 1: force re-init and retry.
+        // Stage 2: if still no event, replace iframe entirely (cache-bust) and retry.
+        if (state.retryTimer) clearTimeout(state.retryTimer);
+        state.retryTimer = setTimeout(() => {
+            // If no event since click, consider it failed and retry.
+            if (state.lastEventTs < clickTs && state.desiredPlaying !== null) {
+                state.retryCount = 1;
+                console.warn('No play/pause event after click; reinitializing stream for:', iframe?.src);
+                initStreamIfPossible(iframe, true);
+                if (iframe.stream) {
+                    safeStreamCall(
+                        iframe.stream,
+                        state.desiredPlaying ? 'play' : 'pause',
+                        (err) => console.error('Retry failed:', err)
+                    );
+                }
+
+                // Stage 2
+                if (state.retryTimer) clearTimeout(state.retryTimer);
+                state.retryTimer = setTimeout(() => {
+                    if (state.lastEventTs < clickTs && state.desiredPlaying !== null && state.retryCount === 1) {
+                        state.retryCount = 2;
+                        const src = iframe?.src || '';
+                        const cacheBustedSrc = src
+                            ? `${src}${src.includes('?') ? '&' : '?'}cb=${Date.now()}`
+                            : src;
+
+                        console.warn('Still no play/pause event; replacing iframe and retrying for:', src);
+                        const newIframe = replaceIframePreservingAttrs(iframe, cacheBustedSrc);
+                        if (!newIframe) return;
+
+                        newIframe.addEventListener('load', () => {
+                            initStreamIfPossible(newIframe, true);
+                            if (newIframe.stream) {
+                                safeStreamCall(
+                                    newIframe.stream,
+                                    state.desiredPlaying ? 'play' : 'pause',
+                                    (err) => console.error('Iframe-replace retry failed:', err)
+                                );
+                            }
+                        }, { once: true });
+                    }
+                    state.retryTimer = null;
+                }, 700);
+            }
+            state.retryTimer = null;
+        }, 500);
+    });
 
     // Create functionality to only play videos when they are visible
     const observer = new IntersectionObserver((entries) => {
@@ -488,14 +730,22 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
 
             if (entry.isIntersecting) {
                 // Video entered viewport: Play
-                stream.play().catch(e => { /* Ignore auto-play strictness errors */ });
-                const overlay = iframe.parentElement.querySelector('.stream-overlay');
-                if (overlay) overlay.classList.add('playing');
+                // [FIX] Checking Manual Pause State
+                // Only auto-play if the user hasn't explicitly paused it.
+                if (!iframe.isManuallyPaused) {
+                    safeStreamCall(stream, 'play', () => { /* Ignore auto-play strictness errors */ });
+                    const st = getState(iframe);
+                    st.isPlaying = true;
+                    st.lastEventTs = Date.now();
+                    setOverlayPlaying(iframe, true);
+                }
             } else {
                 // Video left viewport: Pause to save resources
-                stream.pause().catch(e => { });
-                const overlay = iframe.parentElement.querySelector('.stream-overlay');
-                if (overlay) overlay.classList.remove('playing');
+                safeStreamCall(stream, 'pause', () => { });
+                const st = getState(iframe);
+                st.isPlaying = false;
+                st.lastEventTs = Date.now();
+                setOverlayPlaying(iframe, false);
             }
         });
     }, {
@@ -503,85 +753,13 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     });
 
     iframes.forEach(iframe => {
-        const overlay = iframe.parentElement.querySelector('.stream-overlay');
-        let isPlaying = true; // Local tracking state
+        iframe.isManuallyPaused = false;
 
-        // One-time Overlay Click Listener (delegated to current iframe.stream)
-        if (overlay) {
-            overlay.classList.add('playing');
-            overlay.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Always use the current stream instance
-                if (iframe.stream) {
-                    // Use actual player state if available, otherwise trust local state
-                    // SDK 'paused' property is the most reliable source of truth
-                    const playerPaused = (typeof iframe.stream.paused !== 'undefined') ? iframe.stream.paused : !isPlaying;
-
-                    if (playerPaused) {
-                        iframe.stream.play().catch(e => console.error('Play failed:', e));
-                    } else {
-                        iframe.stream.pause().catch(e => console.error('Pause failed:', e));
-                    }
-                }
-            });
-        }
-
-        // Function to set up stream and listeners (re-usable for reloads)
-        const setupStream = () => {
-            // Init Stream
-            const stream = Stream(iframe);
-            iframe.stream = stream;
-
-            // Sync overlay state
-            stream.addEventListener('play', () => {
-                isPlaying = true;
-                if (overlay) overlay.classList.add('playing');
-            });
-            stream.addEventListener('pause', () => {
-                isPlaying = false;
-                if (overlay) overlay.classList.remove('playing');
-            });
-
-            // Col 3 Special Logic: Infinite Random Playback
-            if (colIndex === 2) {
-                // Ensure loop is false when metadata loads (Fix for race condition)
-                stream.addEventListener('loadedmetadata', () => {
-                    stream.loop = false;
-                    console.log('Enforced loop=false for Col 3 video');
-                });
-
-                stream.loop = false; // Set immediately as well
-
-                stream.addEventListener('ended', () => {
-                    // Pick random different video
-                    let newId;
-                    do {
-                        newId = videoIds[Math.floor(Math.random() * videoIds.length)];
-                    } while (iframe.src.includes(newId));
-
-                    console.log('Video ended in Col 3. Switching to:', newId);
-
-                    // Reset State for Autoplay transition
-                    isPlaying = true;
-                    if (overlay) overlay.classList.add('playing');
-
-                    // Update SRC
-                    iframe.src = `https://customer-vippiceawjzmumxa.cloudflarestream.com/${newId}/iframe?muted=true&preload=true&loop=false&autoplay=true&controls=false`;
-
-                    // When new iframe loads, re-setup stream
-                    iframe.onload = () => {
-                        setupStream(); // Recursive setup for new content
-                        // Force play just in case autoplay is blocked or deferred
-                        setTimeout(() => {
-                            if (iframe.stream) iframe.stream.play().catch(() => { });
-                        }, 100);
-                    };
-                });
-            }
-        };
-
-        // Initial Setup
-        setupStream();
+        // Initialize stream:
+        // - Try once immediately
+        // - Also init on 'load' (critical for loading="lazy")
+        iframe.addEventListener('load', () => initStreamIfPossible(iframe), { once: true });
+        initStreamIfPossible(iframe);
 
         // Start observing
         observer.observe(iframe);
