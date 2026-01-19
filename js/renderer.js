@@ -1,6 +1,7 @@
 // Global State
 let currentCols = 0;
 let introPlayed = false; // Track if intro animation has finished
+let introInProgress = false; // Prevent duplicate intro spotlight init
 const layoutContainer = document.getElementById('layout-container');
 const contentTemplate = document.getElementById('content-template');
 const lenisInstances = []; // Store Lenis instances to destroy on layout change
@@ -305,35 +306,56 @@ function updateLayout() {
     }
 
     // TRIGGER INTRO FADE-IN SEQUENCE
-    if (!introPlayed) {
+    if (!introPlayed && !introInProgress) {
         console.log('Starting Intro Sequence: Step 1 (Bugs Only)');
+        introInProgress = true;
 
         // 0. Init Cursor Spotlight System (Mask + Highlight)
+        // Set CSS vars BEFORE elements mount to avoid a single-frame flash with stale values.
+        const initialMouseX = window.innerWidth / 2;
+        const initialMouseY = window.innerHeight / 2;
+        document.body.style.setProperty('--spot-r', '0px');
+        document.body.style.setProperty('--mouse-x', `${initialMouseX}px`);
+        document.body.style.setProperty('--mouse-y', `${initialMouseY}px`);
+        document.body.style.setProperty('--trail-x', `${initialMouseX}px`);
+        document.body.style.setProperty('--trail-y', `${initialMouseY}px`);
+
         const spotlight = document.createElement('div');
         spotlight.classList.add('cursor-spotlight');
+        spotlight.style.opacity = '0';
         document.body.appendChild(spotlight);
 
         const highlight = document.createElement('div');
         highlight.classList.add('grid-highlight');
+        highlight.style.opacity = '0';
         document.body.appendChild(highlight);
 
         // Hide real cursor initially
         document.body.classList.add('intro-cursor-hidden');
 
         // Mouse State
-        let mouseX = window.innerWidth / 2;
-        let mouseY = window.innerHeight / 2;
+        let mouseX = initialMouseX;
+        let mouseY = initialMouseY;
         let trailX = mouseX;
         let trailY = mouseY;
 
         // Spotlight Growth: Start at 0, grow to 450
         let currentSpotRadius = 0;
         const targetSpotRadius = 450;
+        const introStartTime = Date.now();
+        const inputUnlockTime = introStartTime + 1200;
+
+        // Reveal spotlight after first frame to avoid initial flash
+        requestAnimationFrame(() => {
+            spotlight.style.opacity = '';
+            highlight.style.opacity = '';
+        });
 
         const lerpFactor = 0.12;
 
         // Track Mouse
         window.addEventListener('mousemove', (e) => {
+            if (Date.now() < inputUnlockTime) return;
             mouseX = e.clientX;
             mouseY = e.clientY;
         });
@@ -345,9 +367,17 @@ function updateLayout() {
             document.body.style.setProperty('--mouse-x', `${mouseX}px`);
             document.body.style.setProperty('--mouse-y', `${mouseY}px`);
 
-            // Trail follows with Lerp
-            trailX += (mouseX - trailX) * lerpFactor;
-            trailY += (mouseY - trailY) * lerpFactor;
+            // During the first ~1.2s, lock mouse + trail to center to avoid
+            // intersect-mask flicker while the radius is still small.
+            if (Date.now() < inputUnlockTime) {
+                mouseX = window.innerWidth / 2;
+                mouseY = window.innerHeight / 2;
+                trailX = mouseX;
+                trailY = mouseY;
+            } else {
+                trailX += (mouseX - trailX) * lerpFactor;
+                trailY += (mouseY - trailY) * lerpFactor;
+            }
             document.body.style.setProperty('--trail-x', `${trailX}px`);
             document.body.style.setProperty('--trail-y', `${trailY}px`);
 
@@ -387,6 +417,9 @@ function updateLayout() {
 
                     // Show real cursor (0.5s overlap with fade end)
                     document.body.classList.remove('intro-cursor-hidden');
+
+                    // Intro is fully complete
+                    introInProgress = false;
                 }, 4000);
             }, 5000);
 
@@ -445,6 +478,7 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
             lenis.resize();
             const maxScroll = lenis.limit;
             const target = Math.random() * maxScroll;
+            suppressScrollEffectsUntil = Date.now() + 1200;
             lenis.scrollTo(target, { immediate: true });
         }, 200);
     }
@@ -453,6 +487,7 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
             lenis.resize();
             const maxScroll = lenis.limit;
             const target = Math.random() * maxScroll;
+            suppressScrollEffectsUntil = Date.now() + 1200;
             lenis.scrollTo(target, { immediate: true });
         }, 200);
     }
@@ -467,8 +502,10 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     // 3. Scroll Blur Effect (Per Column)
     let scrollTimer;
     let isScrolling = false;
+    let suppressScrollEffectsUntil = 0;
 
     columnElement.addEventListener('scroll', () => {
+        if (Date.now() < suppressScrollEffectsUntil) return;
         if (!isScrolling) {
             isScrolling = true;
             bugOverlay.classList.remove('scrolling-removing');

@@ -330,12 +330,6 @@ nav a:hover {
     /* Semi-transparent hover */
 }
 
-/* Adjust content wrapper for column context */
-.content-wrapper {
-    /* width: 100%;  Already default */
-    /* Remove fixed/absolute positioning contexts if any interfering */
-}
-
 /* Lenis Recommended CSS */
 html.lenis,
 html.lenis body {
@@ -420,11 +414,11 @@ html.lenis body {
     /* The Mask: Holes at Mouse and Trail */
     /* Gradient: Transparent (Hole) -> Black (Opaque Overlay) */
     -webkit-mask-image:
-        radial-gradient(circle var(--spot-r) at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, black 80%),
-        radial-gradient(circle calc(var(--spot-r) * 1.5) at var(--trail-x, 50%) var(--trail-y, 50%), transparent 0%, black 80%);
+        radial-gradient(circle var(--spot-r, 0px) at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, black 80%),
+        radial-gradient(circle calc(var(--spot-r, 0px) * var(--trail-mult, 1.5)) at var(--trail-x, 50%) var(--trail-y, 50%), transparent 0%, black 80%);
     mask-image:
-        radial-gradient(circle var(--spot-r) at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, black 80%),
-        radial-gradient(circle calc(var(--spot-r) * 1.5) at var(--trail-x, 50%) var(--trail-y, 50%), transparent 0%, black 80%);
+        radial-gradient(circle var(--spot-r, 0px) at var(--mouse-x, 50%) var(--mouse-y, 50%), transparent 0%, black 80%),
+        radial-gradient(circle calc(var(--spot-r, 0px) * var(--trail-mult, 1.5)) at var(--trail-x, 50%) var(--trail-y, 50%), transparent 0%, black 80%);
 
     /* Combine holes (Intersect = Keep opaque where BOTH are opaque. If one is transp, result is transp) */
     -webkit-mask-composite: destination-in;
@@ -444,7 +438,7 @@ html.lenis body {
     z-index: 4;
     /* Below the mask (5), Above content (3/2/1) */
 
-    background: radial-gradient(circle calc(var(--spot-r) * 0.833) at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    background: radial-gradient(circle calc(var(--spot-r, 0px) * 0.833) at var(--mouse-x, 50%) var(--mouse-y, 50%),
             rgba(255, 255, 255, 0.4) 0%,
             transparent 70%);
     mix-blend-mode: color-dodge;
