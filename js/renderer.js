@@ -459,18 +459,51 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     }
     requestAnimationFrame(raf);
 
-    // 1.1 Scrollbar Visibility Logic (Auto-hide)
-    // Delayed attachment to prevent initial flash during setup scroll
+    // 1.1 Scrollbar Visibility + Scroll Effects (single handler)
+    // Delay scrollbar visibility to prevent initial flash during setup scroll
+    let scrollbarTimer;
+    let scrollTimer;
+    let isScrolling = false;
+    let suppressScrollEffectsUntil = 0;
+    let scrollbarEnabled = false;
+
     setTimeout(() => {
-        let scrollbarTimer;
-        columnElement.addEventListener('scroll', () => {
+        scrollbarEnabled = true;
+    }, 1000);
+
+    const handleScroll = () => {
+        // Scrollbar visibility (delayed enable)
+        if (scrollbarEnabled) {
             columnElement.classList.add('show-scrollbar');
             clearTimeout(scrollbarTimer);
             scrollbarTimer = setTimeout(() => {
                 columnElement.classList.remove('show-scrollbar');
             }, 1000); // Hide after 1s of inactivity
-        });
-    }, 1000);
+        }
+
+        // Suppress visual effects during initial auto-scroll
+        if (Date.now() < suppressScrollEffectsUntil) return;
+
+        if (!isScrolling) {
+            isScrolling = true;
+            bugOverlay.classList.remove('scrolling-removing');
+            bugOverlay.classList.add('scrolling');
+        }
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+            isScrolling = false;
+            bugOverlay.classList.remove('scrolling');
+            bugOverlay.classList.add('scrolling-removing');
+            setTimeout(() => {
+                bugOverlay.classList.remove('scrolling-removing');
+            }, 4000);
+        }, 100);
+
+        // Trigger random spawn in this column on scroll
+        sys.scheduleIdleBug();
+    };
+
+    columnElement.addEventListener('scroll', handleScroll);
 
     // Set initial scroll position based on column index
     if (colIndex === 1) {
@@ -496,34 +529,6 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     // 2. Init Bug System for this column
     const sys = new BugSystem(bugOverlay);
     bugSystems.push(sys);
-
-    // 3. Scroll Blur Effect (Per Column)
-    // DISABLED FOR COLUMN 1 (per user request)
-    // 3. Scroll Blur Effect (Per Column)
-    let scrollTimer;
-    let isScrolling = false;
-    let suppressScrollEffectsUntil = 0;
-
-    columnElement.addEventListener('scroll', () => {
-        if (Date.now() < suppressScrollEffectsUntil) return;
-        if (!isScrolling) {
-            isScrolling = true;
-            bugOverlay.classList.remove('scrolling-removing');
-            bugOverlay.classList.add('scrolling');
-        }
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(() => {
-            isScrolling = false;
-            bugOverlay.classList.remove('scrolling');
-            bugOverlay.classList.add('scrolling-removing');
-            setTimeout(() => {
-                bugOverlay.classList.remove('scrolling-removing');
-            }, 4000);
-        }, 100);
-
-        // Trigger random spawn in this column on scroll
-        sys.scheduleIdleBug();
-    });
 
     // 4. Initialize Cloudflare Stream Videos
     // 4. Initialize Cloudflare Stream Videos (Smart Lazy Loading)

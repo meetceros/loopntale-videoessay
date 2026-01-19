@@ -50,9 +50,9 @@ body.intro-cursor-hidden iframe {
 /* Unified Blur Effect (apply Col 2 style to all columns) */
 .layout-column .bug-overlay.scrolling {
     /* Use high contrast & brightness to create quantization/banding */
-    -webkit-backdrop-filter: blur(20px) contrast(4) brightness(0.8) grayscale(100%);
-    backdrop-filter: blur(20px) contrast(4) brightness(0.8) grayscale(100%);
-    background: rgba(0, 0, 0, 0.9);
+    -webkit-backdrop-filter: blur(16px) contrast(3.2) brightness(0.9) grayscale(100%);
+    backdrop-filter: blur(16px) contrast(3.2) brightness(0.9) grayscale(100%);
+    background: rgba(0, 0, 0, 0.7);
 
     /* Apply SVG Noise Filter via Mask/Overlay Logic */
     /* Note: Ideally we apply filter to the backdrop, but support is limited.
