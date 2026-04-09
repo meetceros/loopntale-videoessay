@@ -6,6 +6,40 @@ const layoutContainer = document.getElementById('layout-container');
 const lenisInstances = []; // Store Lenis instances to destroy on layout change
 const bugSystems = [];     // Store BugSystem instances
 
+// Shared RAF loop — one loop ticks all Lenis instances instead of one per column.
+// Prevents zombie RAF callbacks after lenis.destroy() on layout change.
+let sharedRafId = null;
+
+function startSharedRaf() {
+    if (sharedRafId !== null) return;
+    function tick(time) {
+        lenisInstances.forEach(l => l.raf(time));
+        sharedRafId = requestAnimationFrame(tick);
+    }
+    sharedRafId = requestAnimationFrame(tick);
+}
+
+function stopSharedRaf() {
+    if (sharedRafId !== null) {
+        cancelAnimationFrame(sharedRafId);
+        sharedRafId = null;
+    }
+}
+
+// Cloudflare Stream SDK wrapper
+// Isolates the global Stream dependency so the rest of the code never touches window.Stream directly.
+// If the SDK fails to load, isReady() returns false and initStreamIfPossible bails gracefully.
+const StreamSDK = {
+    _fn: null,
+    isReady() {
+        if (!this._fn) this._fn = typeof Stream === 'function' ? Stream : null;
+        return this._fn !== null;
+    },
+    create(iframe) {
+        return this._fn(iframe);
+    }
+};
+
 // Asset Config
 const MAX_BUGS_PER_COLUMN = 4;
 const BUG_SIZE = 1500;
@@ -275,6 +309,7 @@ function updateLayout() {
     console.log(`Updating layout to ${targetCols} columns`);
 
     // Cleanup
+    stopSharedRaf();
     lenisInstances.forEach(l => l.destroy());
     lenisInstances.length = 0;
     bugSystems.forEach(sys => sys.destroy());
@@ -337,6 +372,9 @@ function updateLayout() {
         // 3. Init Features
         initColumnFeatures(col, bugOverlay, i);
     }
+
+    // Start single shared RAF loop for all Lenis instances
+    startSharedRaf();
 
     // TRIGGER INTRO FADE-IN SEQUENCE
     if (!introPlayed && !introInProgress) {
@@ -485,12 +523,7 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         smoothTouch: false
     });
     lenisInstances.push(lenis);
-
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
+    // RAF is handled by the shared loop in updateLayout (startSharedRaf)
 
     // 1.1 Scrollbar Visibility + Scroll Effects (single handler)
     // Delay scrollbar visibility to prevent initial flash during setup scroll
@@ -637,6 +670,10 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     };
 
     const initStreamIfPossible = (iframe, force = false) => {
+        if (!StreamSDK.isReady()) {
+            console.warn('Stream SDK not available — skipping init for:', iframe?.src);
+            return;
+        }
         const state = getState(iframe);
         if (!force && (iframe.stream || state.isInitAttempted)) return;
         state.isInitAttempted = true;
@@ -646,7 +683,7 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         }
 
         try {
-            const stream = Stream(iframe);
+            const stream = StreamSDK.create(iframe);
             iframe.stream = stream;
             attachStreamListeners(iframe, stream);
         } catch (e) {
