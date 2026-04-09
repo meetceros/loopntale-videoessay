@@ -3,7 +3,6 @@ let currentCols = 0;
 let introPlayed = false; // Track if intro animation has finished
 let introInProgress = false; // Prevent duplicate intro spotlight init
 const layoutContainer = document.getElementById('layout-container');
-const contentTemplate = document.getElementById('content-template');
 const lenisInstances = []; // Store Lenis instances to destroy on layout change
 const bugSystems = [];     // Store BugSystem instances
 
@@ -31,6 +30,48 @@ const videoIds = [
     '181779150be66261e9d49dda2b6433a0', '1eb57a1e91195f6447f0b7266700eff9', 'a35659988391572534ebbe698df620f5',
     'dbf6d80905ba51173b2d4b8f1a7d1526'
 ];
+
+// --- Video DOM Builder ---
+const CF_CUSTOMER = 'customer-vippiceawjzmumxa.cloudflarestream.com';
+
+function createVideoContainer(videoId, index) {
+    const baseUrl = `https://${CF_CUSTOMER}/${videoId}`;
+    const posterUrl = `https://${CF_CUSTOMER}/${videoId}/thumbnails/thumbnail.jpg?time=&height=600`;
+    const isEager = index < 2; // first two mount immediately
+    const src = `${baseUrl}/iframe?muted=true${isEager ? '&preload=true' : ''}&loop=true&autoplay=true&poster=${encodeURIComponent(posterUrl)}&controls=false`;
+
+    const container = document.createElement('div');
+    container.className = 'video-container';
+
+    const inner = document.createElement('div');
+
+    if (isEager) {
+        // Eager: insert iframe immediately
+        const iframe = document.createElement('iframe');
+        iframe.className = `stream-iframe${index === 0 ? ' main-stream' : ''}`;
+        iframe.title = 'Video player';
+        iframe.src = src;
+        iframe.allow = 'accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;';
+        iframe.allowFullscreen = true;
+        inner.appendChild(iframe);
+    } else {
+        // Lazy: show poster thumbnail, mount iframe on scroll proximity
+        const img = document.createElement('img');
+        img.className = 'video-poster';
+        img.src = posterUrl;
+        img.alt = '';
+        img.dataset.iframeSrc = src;
+        inner.appendChild(img);
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'stream-overlay';
+
+    inner.appendChild(overlay);
+    container.appendChild(inner);
+
+    return container;
+}
 
 // PRELOAD BUG IMAGES (Immediate)
 console.log('Preloading Bug Images...');
@@ -241,7 +282,6 @@ function updateLayout() {
     layoutContainer.innerHTML = '';
 
     // Build Columns
-    let col1OrderIndices = null;
     for (let i = 0; i < targetCols; i++) {
         const col = document.createElement('div');
         col.className = 'layout-column';
@@ -264,41 +304,34 @@ function updateLayout() {
 
         col.appendChild(textureOverlay);
 
-        // 3. Clone and Reorder Content
-        const contentFragment = contentTemplate.content.cloneNode(true);
-        const wrapper = contentFragment.querySelector('.content-wrapper');
+        // 3. Build Content from videoIds array
+        const wrapper = document.createElement('div');
+        wrapper.className = 'content-wrapper';
 
         // EXTENDED INTRO LOGIC (Step 3: Videos)
-        // If intro hasn't played, start hidden (opacity: 0)
         if (!introPlayed) {
             wrapper.classList.add('intro-hidden');
         }
 
-        const videos = Array.from(wrapper.children);
-        const baseVideos = [...videos];
+        const videos = videoIds.map((id, idx) => createVideoContainer(id, idx));
 
         // Col 1 (Index 1): Random Order
         if (i === 1) {
             videos.sort(() => Math.random() - 0.5);
-            // Store the shuffled index order (not the nodes) to avoid moving nodes across columns.
-            col1OrderIndices = videos.map(v => baseVideos.indexOf(v));
         }
-        // Col 3 (Index 2): Reverse order of Col 1
+        // Col 2 (Index 2): Reverse Order + Force No Loop
         if (i === 2) {
-            if (col1OrderIndices && col1OrderIndices.length === videos.length) {
-                const reversed = [...col1OrderIndices].reverse();
-                const reordered = reversed.map(idx => videos[idx]);
-                videos.splice(0, videos.length, ...reordered);
-            } else {
-                videos.reverse();
-            }
+            videos.reverse();
+            videos.forEach(videoDiv => {
+                const iframe = videoDiv.querySelector('iframe');
+                if (iframe) {
+                    iframe.src = iframe.src.replace(/loop=true/g, 'loop=false');
+                }
+            });
         }
 
-        // Re-append in new order
-        wrapper.innerHTML = '';
         videos.forEach(video => wrapper.appendChild(video));
-
-        col.appendChild(contentFragment);
+        col.appendChild(wrapper);
         layoutContainer.appendChild(col);
 
         // 3. Init Features
@@ -530,8 +563,9 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
     const sys = new BugSystem(bugOverlay);
     bugSystems.push(sys);
 
-    // 4. Initialize Cloudflare Stream Videos
-    // 4. Initialize Cloudflare Stream Videos (Smart Lazy Loading)
+    // Stream Video Init
+    // - mountObserver (300px ahead): controls DOM mounting (when iframe enters DOM)
+    // - observer (threshold 0.1): controls playback only (play/pause)
     const iframes = columnElement.querySelectorAll('iframe');
     const iframeState = new WeakMap();
 
@@ -676,10 +710,28 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         e.stopPropagation();
 
         const container = overlay.parentElement;
-        const iframe = container ? container.querySelector('iframe') : null;
-        if (!iframe) return;
+        let iframe = container ? container.querySelector('iframe') : null;
 
-        // Ensure stream exists (critical for loading="lazy")
+        // If poster is still showing, mount iframe immediately on click
+        if (!iframe) {
+            const poster = container ? container.querySelector('.video-poster') : null;
+            if (!poster?.dataset?.iframeSrc) return;
+
+            iframe = document.createElement('iframe');
+            iframe.className = 'stream-iframe';
+            iframe.title = 'Video player';
+            iframe.src = poster.dataset.iframeSrc;
+            iframe.allow = 'accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;';
+            iframe.allowFullscreen = true;
+            iframe.isManuallyPaused = false;
+
+            poster.replaceWith(iframe);
+            iframe.addEventListener('load', () => initStreamIfPossible(iframe), { once: true });
+            initStreamIfPossible(iframe);
+            observer.observe(iframe);
+        }
+
+        // Ensure stream is initialized
         if (!iframe.stream) initStreamIfPossible(iframe);
         if (!iframe.stream) return;
 
@@ -763,7 +815,7 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         }, 500);
     });
 
-    // Create functionality to only play videos when they are visible
+    // Play/Pause Observer: playback control only — never touches DOM mounting or src
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const iframe = entry.target;
@@ -806,6 +858,32 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         // Start observing
         observer.observe(iframe);
     });
+
+    // Mount Observer: replaces poster placeholder with iframe on scroll proximity (300px ahead)
+    // Does NOT remove src on scroll-out — preserves stream state and avoids reload flicker
+    const mountObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const img = entry.target;
+            mountObserver.unobserve(img);
+
+            const iframe = document.createElement('iframe');
+            iframe.className = 'stream-iframe';
+            iframe.title = 'Video player';
+            iframe.src = img.dataset.iframeSrc;
+            iframe.allow = 'accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;';
+            iframe.allowFullscreen = true;
+            iframe.isManuallyPaused = false;
+
+            img.replaceWith(iframe);
+
+            iframe.addEventListener('load', () => initStreamIfPossible(iframe), { once: true });
+            initStreamIfPossible(iframe);
+            observer.observe(iframe);
+        });
+    }, { rootMargin: '300px', threshold: 0 });
+
+    columnElement.querySelectorAll('.video-poster').forEach(img => mountObserver.observe(img));
 }
 
 // Initialize Layout

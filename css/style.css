@@ -171,6 +171,19 @@ body.intro-cursor-hidden iframe {
     left: 0;
 }
 
+/* Poster placeholder shown before iframe mounts */
+.video-poster {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    background: #000;
+    border: none;
+}
+
 .stream-overlay,
 #stream-overlay {
     position: absolute;
@@ -491,4 +504,9 @@ html.lenis body {
             linear-gradient(rgba(255, 255, 255, 0.2) 0.8px, transparent 0.8px),
             linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0.8px, transparent 0.8px);
     }
+}
+
+/* SVG Filter Definitions - Hidden */
+.svg-definitions {
+    display: none;
 }
