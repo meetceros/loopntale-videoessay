@@ -67,6 +67,7 @@ const videoIds = [
 
 // --- Video DOM Builder ---
 const CF_CUSTOMER = 'customer-vippiceawjzmumxa.cloudflarestream.com';
+const EMPTY_IMAGE_SRC = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
 function createVideoContainer(videoId, index) {
     const baseUrl = `https://${CF_CUSTOMER}/${videoId}`;
@@ -92,8 +93,11 @@ function createVideoContainer(videoId, index) {
         // Lazy: show poster thumbnail, mount iframe on scroll proximity
         const img = document.createElement('img');
         img.className = 'video-poster';
-        img.src = posterUrl;
+        img.src = EMPTY_IMAGE_SRC;
         img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.dataset.posterSrc = posterUrl;
         img.dataset.iframeSrc = src;
         inner.appendChild(img);
     }
@@ -896,6 +900,20 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         observer.observe(iframe);
     });
 
+    // Poster Load Observer: loads thumbnail image well before it becomes visible,
+    // while preserving the existing layout box and mount timing.
+    const posterLoadObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const img = entry.target;
+            posterLoadObserver.unobserve(img);
+
+            if (img.dataset.posterSrc && img.src !== img.dataset.posterSrc) {
+                img.src = img.dataset.posterSrc;
+            }
+        });
+    }, { rootMargin: '1200px', threshold: 0 });
+
     // Mount Observer: replaces poster placeholder with iframe on scroll proximity (300px ahead)
     // Does NOT remove src on scroll-out — preserves stream state and avoids reload flicker
     const mountObserver = new IntersectionObserver((entries) => {
@@ -920,7 +938,10 @@ function initColumnFeatures(columnElement, bugOverlay, colIndex) {
         });
     }, { rootMargin: '300px', threshold: 0 });
 
-    columnElement.querySelectorAll('.video-poster').forEach(img => mountObserver.observe(img));
+    columnElement.querySelectorAll('.video-poster').forEach(img => {
+        posterLoadObserver.observe(img);
+        mountObserver.observe(img);
+    });
 }
 
 // Initialize Layout
